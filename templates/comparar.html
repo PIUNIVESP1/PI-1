@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Comparativo - Preço Justo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { background-color: #f8f9fa; padding-bottom: 120px; font-family: 'Segoe UI', sans-serif; }
+        .app-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .mkt-row { border-radius: 15px; padding: 15px; margin-bottom: 10px; border: 1px solid rgba(0,0,0,0.03); transition: 0.2s; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
+        .nav-item { text-align: center; color: #adb5bd; text-decoration: none; font-size: 0.75rem; }
+        .nav-item.active { color: #198754; font-weight: bold; }
+        .btn-flutuante { position: fixed; bottom: 85px; left: 20px; right: 20px; z-index: 999; box-shadow: 0 8px 25px rgba(0,0,0,0.1); border: none; }
+    </style>
+</head>
+<body>
+
+<div class="container py-4">
+    <h3 class="fw-bold text-success mb-4">Melhores Opções</h3>
+    
+    {% for r in rankings %}
+    <div class="app-card shadow-sm border-0">
+        <h6 class="text-muted small fw-bold mb-3 text-uppercase"><i class="bi bi-list-check me-1"></i> {{ r.lista_nome }}</h6>
+        
+        {% for mkt in r.comparativo %}
+        <div class="mkt-row {{ mkt.bg }} d-flex justify-content-between align-items-center">
+            <div>
+                <span class="d-block fw-bold {{ mkt.cor }} fs-6">
+                    {% if loop.first %}<i class="bi bi-award-fill"></i>{% endif %} {{ mkt.nome }}
+                </span>
+                <span class="badge bg-white text-dark border-0 mt-1" style="font-size: 0.65rem;">
+                    {{ mkt.qtd_encontrados }} de {{ mkt.qtd_total }} itens
+                </span>
+            </div>
+            <div class="text-end">
+                <small class="text-muted d-block" style="font-size: 0.6rem;">SOMA DAS QTDS</small>
+                <span class="fw-bold {{ mkt.cor }} fs-4">R$ {{ "%.2f"|format(mkt.total) }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+
+    <h6 class="mt-4 mb-3 text-muted fw-bold small text-uppercase">Preços por Unidade</h6>
+    {% for prod in dados_comunidade %}
+    <div class="app-card py-2 px-3 border-0">
+        <small class="fw-bold text-success text-uppercase">{{ prod.nome }}</small>
+        {% for p in prod.precos %}
+        <div class="d-flex justify-content-between small border-top py-2 mt-1">
+            <span class="text-muted">{{ p.mercado }}</span>
+            <span class="fw-bold">R$ {{ "%.2f"|format(p.valor) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<button class="btn btn-dark btn-flutuante rounded-pill py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#modalPreco">
+    <i class="bi bi-plus-lg me-2"></i>Informar Preço
+</button>
+
+<nav class="nav-bottom shadow-lg">
+    <a href="/listas" class="nav-item"><i class="bi bi-cart3 d-block fs-4"></i>Listas</a>
+    <a href="/comparar" class="nav-item active"><i class="bi bi-search d-block fs-4"></i>Comparar</a>
+    <a href="/logout" class="nav-item text-danger"><i class="bi bi-box-arrow-right d-block fs-4"></i>Sair</a>
+</nav>
+
+<div class="modal fade" id="modalPreco" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="/atualizar-preco" method="POST" class="modal-content rounded-4 p-4 border-0 shadow-lg">
+            <h5 class="fw-bold mb-3 text-success">Atualizar Valor Unitário</h5>
+            <input type="text" name="produto" class="form-control mb-3" placeholder="Produto" required>
+            <select name="mercado" class="form-select mb-3">
+                <option>Atacadão Santo Amaro</option><option>Extra Moema</option>
+                <option>Carrefour Pinheiros</option><option>Pão de Açúcar Vila Mariana</option>
+            </select>
+            <input type="number" step="0.01" name="valor" class="form-control mb-4" placeholder="Preço (R$)" required>
+            <button class="btn btn-success w-100 rounded-pill py-2">Salvar Preço</button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
