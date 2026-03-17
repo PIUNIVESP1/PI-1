@@ -3,62 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Comparar Preços</title>
+    <title>Comparar - Preço Justo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; padding-bottom: 120px; }
-        .app-card { background: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .mkt-row { border-radius: 15px; padding: 15px; margin-bottom: 10px; border: 1px solid rgba(0,0,0,0.03); }
-        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 15px 0; z-index: 1000; }
-        .nav-item { text-align: center; color: #adb5bd; text-decoration: none; font-size: 0.75rem; }
+        body { background-color: #f8f9fa; padding-bottom: 150px; }
+        .app-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .mkt-row { border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+        .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; left: 0; }
+        .nav-item { text-align: center; color: #adb5bd; text-decoration: none; font-size: 0.7rem; }
         .nav-item.active { color: #198754; font-weight: bold; }
-        .btn-flutuante { position: fixed; bottom: 85px; left: 20px; right: 20px; z-index: 999; box-shadow: 0 8px 25px rgba(0,0,0,0.1); border: none; }
+        
+        /* Ajuste dos botões flutuantes para ficarem lado a lado */
+        .actions-float { position: fixed; bottom: 80px; left: 0; width: 100%; display: flex; justify-content: center; gap: 10px; padding: 0 15px; z-index: 99; }
+        .btn-float { border-radius: 50px; padding: 10px 15px; font-weight: bold; font-size: 0.85rem; shadow: 0 4px 12px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body>
-<div class="container py-4">
-    <h3 class="fw-bold text-success mb-4">Melhores Opções</h3>
+
+<div class="container py-3">
+    <h5 class="fw-bold text-success mb-3">Ranking por Mercado</h5>
     
     {% for r in rankings %}
-    <div class="app-card shadow-sm border-0">
-        <h6 class="text-muted small fw-bold mb-3 text-uppercase"><i class="bi bi-list-check me-1"></i> {{ r.lista_nome }}</h6>
-        {% for mkt in r.comparativo %}
-        <div class="mkt-row {{ mkt.bg }} d-flex justify-content-between align-items-center">
-            <div>
-                <span class="d-block fw-bold {{ mkt.cor }}">
-                    {% if loop.first %}<i class="bi bi-award-fill"></i>{% endif %} {{ mkt.nome }}
-                </span>
-                <span class="badge bg-white text-dark border-0 mt-1" style="font-size: 0.65rem;">
-                    {{ mkt.qtd_encontrados }} de {{ mkt.qtd_total }} itens
-                </span>
-            </div>
-            <div class="text-end">
-                <small class="text-muted d-block" style="font-size: 0.6rem;">SOMA TOTAL</small>
-                <span class="fw-bold {{ mkt.cor }} fs-4">R$ {{ "%.2f"|format(mkt.total) }}</span>
-            </div>
+    <div class="app-card">
+        <small class="text-muted fw-bold text-uppercase">{{ r.lista_nome }}</small>
+        <div class="mt-2">
+            {% if not r.comparativo %}
+                <p class="text-center text-muted small py-3">Nenhum preço disponível para esta lista.</p>
+            {% else %}
+                {% for mkt in r.comparativo %}
+                <div class="mkt-row {{ mkt.bg }} d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold {{ mkt.col }} d-block">{{ mkt.nome }}</span>
+                        <small class="text-muted" style="font-size: 0.65rem;">Encontrados: {{ mkt.qtd_encontrados }}/{{ mkt.qtd_total }}</small>
+                    </div>
+                    <span class="fw-bold fs-5 {{ mkt.col }}">R$ {{ "%.2f"|format(mkt.total) }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
         </div>
-        {% endfor %}
-    </div>
-    {% endfor %}
-
-    <h6 class="mt-4 mb-3 text-muted fw-bold small text-uppercase">Preços Recentes</h6>
-    {% for prod in dados_comunidade %}
-    <div class="app-card py-2 px-3 border-0 shadow-sm mb-3">
-        <small class="fw-bold text-success text-uppercase">{{ prod.nome }}</small>
-        {% for p in prod.precos %}
-        <div class="d-flex justify-content-between small border-top py-2 mt-1">
-            <span class="text-muted">{{ p.mercado }}</span>
-            <span class="fw-bold">R$ {{ "%.2f"|format(p.valor) }}</span>
-        </div>
-        {% endfor %}
     </div>
     {% endfor %}
 </div>
 
-<button class="btn btn-dark btn-flutuante rounded-pill py-3 fw-bold shadow" data-bs-toggle="modal" data-bs-target="#modalPreco">
-    <i class="bi bi-upc-scan me-2"></i>Informar Preço
-</button>
+<div class="actions-float">
+    <button class="btn btn-dark btn-float shadow" data-bs-toggle="modal" data-bs-target="#mPreco">
+        <i class="bi bi-tag"></i> Informar Preço
+    </button>
+    <button class="btn btn-danger btn-float shadow pulse" data-bs-toggle="modal" data-bs-target="#mPromo">
+        <i class="bi bi-lightning-fill"></i> Promoção Relâmpago
+    </button>
+</div>
+
+{% for tipo in ['Preco', 'Promo'] %}
+<div class="modal fade" id="m{{ tipo }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="/atualizar-preco" method="POST" class="modal-content p-4 border-0 rounded-4">
+            <h6 class="fw-bold {% if tipo == 'Promo' %}text-danger{% else %}text-success{% endif %} mb-3">
+                Informar {% if tipo == 'Promo' %}Promoção Relâmpago{% else %}Valor Unitário{% endif %}
+            </h6>
+            <input type="hidden" name="is_promo" value="{% if tipo == 'Promo' %}true{% else %}false{% endif %}">
+            
+            <input type="text" name="produto" list="meusItens" class="form-control mb-2" placeholder="Produto..." required autocomplete="off">
+            <select name="mercado" class="form-select mb-2">
+                <option>Atacadão</option><option>Extra</option><option>Carrefour</option><option>Pão de Açúcar</option>
+            </select>
+            <input type="text" name="valor" class="form-control mb-3" placeholder="Valor Unitário (Ex: 4.50)" required>
+            
+            <button class="btn {% if tipo == 'Promo' %}btn-danger{% else %}btn-success{% endif %} w-100 rounded-pill py-2 fw-bold">
+                Salvar {% if tipo == 'Promo' %}Promoção{% else %}Preço{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+
+<datalist id="meusItens">
+    {% for s in sugestoes %} <option value="{{ s }}"> {% endfor %}
+</datalist>
 
 <nav class="nav-bottom shadow-lg">
     <a href="/listas" class="nav-item"><i class="bi bi-cart3 d-block fs-4"></i>Listas</a>
@@ -66,54 +88,6 @@
     <a href="/logout" class="nav-item text-danger"><i class="bi bi-box-arrow-right d-block fs-4"></i>Sair</a>
 </nav>
 
-<div class="modal fade" id="modalPreco" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <form action="/atualizar-preco" method="POST" class="modal-content rounded-4 p-4 shadow-lg border-0">
-            <h5 class="fw-bold mb-3 text-success text-center">Atualizar Valor</h5>
-            <div id="reader" style="width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 10px; display: none;"></div>
-            <button type="button" class="btn btn-outline-primary btn-sm mb-3 w-100" onclick="iniciarScanner()">
-                <i class="bi bi-camera"></i> Escanear Código
-            </button>
-            <input type="text" name="produto" id="input_produto" class="form-control mb-3" placeholder="Nome do Produto" required>
-            <select name="mercado" class="form-select mb-3">
-                <option>Atacadão Santo Amaro</option>
-                <option>Extra Moema</option>
-                <option>Carrefour Pinheiros</option>
-                <option>Pão de Açúcar Vila Mariana</option>
-            </select>
-            <input type="number" step="0.01" name="valor" class="form-control mb-4" placeholder="Preço Unitário R$" required>
-            <button class="btn btn-success w-100 rounded-pill py-2">Salvar</button>
-        </form>
-    </div>
-</div>
-
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script>
-let html5QrCode;
-async function buscarProduto(codigo) {
-    try {
-        const response = await fetch(`https://br.openfoodfacts.org/api/v0/product/${codigo}.json`);
-        const data = await response.json();
-        if (data.status === 1) {
-            document.getElementById('input_produto').value = data.product.product_name || data.product.product_name_pt || codigo;
-        } else {
-            document.getElementById('input_produto').value = codigo;
-        }
-    } catch (e) { document.getElementById('input_produto').value = codigo; }
-}
-
-function iniciarScanner() {
-    const readerElement = document.getElementById('reader');
-    readerElement.style.display = 'block';
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: 250 }, (txt) => {
-        html5QrCode.stop().then(() => {
-            readerElement.style.display = 'none';
-            buscarProduto(txt);
-        });
-    });
-}
-</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
