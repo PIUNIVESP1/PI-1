@@ -3,39 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Comparar - Preço Justo</title>
+    <title>Comparar - CrowdPrice</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <style>
-        body { background-color: #f8f9fa; padding-bottom: 150px; }
-        .app-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        body { background-color: #f8f9fa; padding-bottom: 160px; }
+        .app-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .mkt-row { border-radius: 10px; padding: 12px; margin-bottom: 8px; }
         .nav-bottom { position: fixed; bottom: 0; width: 100%; background: white; border-top: 1px solid #eee; display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; left: 0; }
         .nav-item { text-align: center; color: #adb5bd; text-decoration: none; font-size: 0.7rem; }
         .nav-item.active { color: #198754; font-weight: bold; }
-        
-        /* Ajuste dos botões flutuantes para ficarem lado a lado */
-        .actions-float { position: fixed; bottom: 80px; left: 0; width: 100%; display: flex; justify-content: center; gap: 10px; padding: 0 15px; z-index: 99; }
-        .btn-float { border-radius: 50px; padding: 10px 15px; font-weight: bold; font-size: 0.85rem; shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .actions-float { position: fixed; bottom: 80px; width: 100%; display: flex; justify-content: center; gap: 10px; padding: 0 15px; z-index: 99; left: 0; }
+        .btn-float { border-radius: 50px; padding: 10px 20px; font-weight: bold; font-size: 0.85rem; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     </style>
 </head>
 <body>
 
 <div class="container py-3">
-    <h5 class="fw-bold text-success mb-3">Ranking por Mercado</h5>
+    <h5 class="fw-bold text-success mb-3">Ranking das Lojas</h5>
     
     {% for r in rankings %}
     <div class="app-card">
         <small class="text-muted fw-bold text-uppercase">{{ r.lista_nome }}</small>
         <div class="mt-2">
             {% if not r.comparativo %}
-                <p class="text-center text-muted small py-3">Nenhum preço disponível para esta lista.</p>
+                <p class="text-center text-muted small py-3">Sem preços para esta lista.</p>
             {% else %}
                 {% for mkt in r.comparativo %}
                 <div class="mkt-row {{ mkt.bg }} d-flex justify-content-between align-items-center">
                     <div>
                         <span class="fw-bold {{ mkt.col }} d-block">{{ mkt.nome }}</span>
-                        <small class="text-muted" style="font-size: 0.65rem;">Encontrados: {{ mkt.qtd_encontrados }}/{{ mkt.qtd_total }}</small>
+                        <small class="text-muted" style="font-size: 0.65rem;">{{ mkt.qtd_encontrados }}/{{ mkt.qtd_total }} itens</small>
                     </div>
                     <span class="fw-bold fs-5 {{ mkt.col }}">R$ {{ "%.2f"|format(mkt.total) }}</span>
                 </div>
@@ -44,39 +42,68 @@
         </div>
     </div>
     {% endfor %}
+
+    <h6 class="mt-4 mb-2 text-muted fw-bold small">HISTÓRICO / MODERAÇÃO</h6>
+    {% for p in dados_comunidade %}
+    <div class="app-card py-2 d-flex justify-content-between align-items-center mb-1 {% if p.is_promo %}border-start border-4 border-danger{% endif %}">
+        <div class="ms-1">
+            <span class="fw-bold text-success small">{{ p.produto }}</span><br>
+            <small class="text-muted">{{ p.mercado }}</small>
+            {% if p.is_promo %}<span class="badge bg-danger ms-1" style="font-size: 0.55rem;">PROMO</span>{% endif %}
+        </div>
+        <div class="d-flex align-items-center">
+            <div class="text-end me-2">
+                <span class="fw-bold">R$ {{ "%.2f"|format(p.valor) }}</span><br>
+                {% if p.validade %}<small class="text-muted" style="font-size: 0.6rem;">Venc: {{ p.validade | format_data }}</small>{% endif %}
+            </div>
+            <a href="/excluir-preco/{{ p.id }}" class="btn btn-sm btn-light text-danger" onclick="return confirm('A promoção acabou ou o preço mudou?')">
+                <i class="bi bi-trash3"></i>
+            </a>
+        </div>
+    </div>
+    {% endfor %}
 </div>
 
 <div class="actions-float">
-    <button class="btn btn-dark btn-float shadow" data-bs-toggle="modal" data-bs-target="#mPreco">
-        <i class="bi bi-tag"></i> Informar Preço
+    <button class="btn btn-dark btn-float" data-bs-toggle="modal" data-bs-target="#mPreco">
+        <i class="bi bi-tag"></i> Preço Normal
     </button>
-    <button class="btn btn-danger btn-float shadow pulse" data-bs-toggle="modal" data-bs-target="#mPromo">
-        <i class="bi bi-lightning-fill"></i> Promoção Relâmpago
+    <button class="btn btn-danger btn-float" data-bs-toggle="modal" data-bs-target="#mPromo">
+        <i class="bi bi-lightning-fill"></i> Promo Relâmpago
     </button>
 </div>
 
-{% for tipo in ['Preco', 'Promo'] %}
-<div class="modal fade" id="m{{ tipo }}" tabindex="-1">
+<div class="modal fade" id="mPreco" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <form action="/atualizar-preco" method="POST" class="modal-content p-4 border-0 rounded-4">
-            <h6 class="fw-bold {% if tipo == 'Promo' %}text-danger{% else %}text-success{% endif %} mb-3">
-                Informar {% if tipo == 'Promo' %}Promoção Relâmpago{% else %}Valor Unitário{% endif %}
-            </h6>
-            <input type="hidden" name="is_promo" value="{% if tipo == 'Promo' %}true{% else %}false{% endif %}">
-            
+            <h6 class="fw-bold text-success mb-3">Informar Preço</h6>
+            <input type="hidden" name="is_promo" value="false">
             <input type="text" name="produto" list="meusItens" class="form-control mb-2" placeholder="Produto..." required autocomplete="off">
             <select name="mercado" class="form-select mb-2">
                 <option>Atacadão</option><option>Extra</option><option>Carrefour</option><option>Pão de Açúcar</option>
             </select>
-            <input type="text" name="valor" class="form-control mb-3" placeholder="Valor Unitário (Ex: 4.50)" required>
-            
-            <button class="btn {% if tipo == 'Promo' %}btn-danger{% else %}btn-success{% endif %} w-100 rounded-pill py-2 fw-bold">
-                Salvar {% if tipo == 'Promo' %}Promoção{% else %}Preço{% endif %}
-            </button>
+            <input type="text" name="valor" class="form-control mb-3" placeholder="Valor unitário" required>
+            <button class="btn btn-success w-100 rounded-pill py-2 fw-bold">Salvar</button>
         </form>
     </div>
 </div>
-{% endfor %}
+
+<div class="modal fade" id="mPromo" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <form action="/atualizar-preco" method="POST" class="modal-content p-4 border-0 rounded-4">
+            <h6 class="fw-bold text-danger mb-3">Promoção Relâmpago (Vencimento)</h6>
+            <input type="hidden" name="is_promo" value="true">
+            <input type="text" name="produto" list="meusItens" class="form-control mb-2" placeholder="Produto em oferta..." required autocomplete="off">
+            <select name="mercado" class="form-select mb-2">
+                <option>Atacadão</option><option>Extra</option><option>Carrefour</option><option>Pão de Açúcar</option>
+            </select>
+            <input type="text" name="valor" class="form-control mb-2" placeholder="Preço especial" required>
+            <label class="small text-muted mb-1">Data de Vencimento:</label>
+            <input type="date" name="validade" class="form-control mb-3" required>
+            <button class="btn btn-danger w-100 rounded-pill py-2 fw-bold">Postar Promoção</button>
+        </form>
+    </div>
+</div>
 
 <datalist id="meusItens">
     {% for s in sugestoes %} <option value="{{ s }}"> {% endfor %}
