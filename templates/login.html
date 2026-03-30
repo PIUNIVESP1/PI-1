@@ -2,22 +2,118 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Preço Justo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Tá Quanto?</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background: #f0f2f5; 
+            height: 100vh; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .login-card { 
+            background: white; 
+            border-radius: 20px; 
+            padding: 40px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+            border: none;
+            width: 100%;
+            max-width: 400px;
+            transition: transform 0.2s;
+        }
+        .login-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        /* Estilo da Imagem do Logo */
+        .logo-image {
+            width: 150px; /* Tamanho controlado */
+            height: auto;
+            display: block;
+            margin: 0 auto 30px auto; /* Centraliza e dá espaço abaixo */
+        }
+
+        /* Inputs de Texto */
+        .form-control { 
+            background-color: #f7f9fc;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 500;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.1); /* Brilho sutil do Bootstrap */
+            border-color: #aaa;
+        }
+
+        /* Botão de Login - Cor Azul Escuro do Logo */
+        .btn-login { 
+            background-color: #2b4570; /* Azul escuro do logo */
+            color: white; 
+            border-radius: 10px; 
+            padding: 12px; 
+            font-weight: bold; 
+            width: 100%; 
+            border: none;
+            transition: background-color 0.2s;
+        }
+        .btn-login:hover { 
+            background-color: #213559; /* Tom mais escuro */
+        }
+        
+        /* Links - Cor Verde ou Laranja sutil */
+        .text-register {
+            color: #198754; /* Verde sucesso */
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .text-register:hover {
+            color: #146c43;
+        }
+
+        /* Alertas de Erro (Flask Flash) */
+        .alert {
+            font-size: 0.8rem;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
-<body class="bg-light d-flex align-items-center" style="height: 100vh;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-4 card p-4 shadow-sm border-0 rounded-4">
-                <h3 class="text-center text-success fw-bold mb-4">Entrar</h3>
-                <form method="POST">
-                    <input type="text" name="username" class="form-control mb-3" placeholder="Usuário" required>
-                    <input type="password" name="password" class="form-control mb-4" placeholder="Senha" required>
-                    <button class="btn btn-success w-100 rounded-pill mb-3">Entrar</button>
-                    <div class="text-center small">Não tem conta? <a href="/cadastro">Cadastre-se</a></div>
-                </form>
+<body>
+
+<div class="container d-flex justify-content-center">
+    <div class="card login-card">
+        
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo Tá Quanto?" class="logo-image">
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert alert-danger p-2 text-center">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">Nome de Usuário</label>
+                <input type="text" name="username" class="form-control" required placeholder="Digite seu usuário..." autocomplete="off">
             </div>
-        </div>
+            <div class="mb-4">
+                <label class="form-label small fw-bold text-muted">Senha</label>
+                <input type="password" name="password" class="form-control" required placeholder="********">
+            </div>
+            <button type="submit" class="btn btn-login shadow-sm">Entrar no Sistema</button>
+            <div class="text-center mt-3 small">
+                Ainda não tem conta? <a href="/cadastro" class="text-register">Registre-se agora!</a>
+            </div>
+        </form>
     </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
